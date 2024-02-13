@@ -6,15 +6,15 @@
  *
  * Simply drag the corners of the CornerPinSurface so that they
  * match the physical surface's corners. The result will be an
- * undistorted projection, regardless of projector position or 
+ * undistorted projection, regardless of projector position or
  * orientation.
  *
  * You can also create more than one Surface object, and project
  * onto multiple flat surfaces using a single projector.
  *
- * This extra flexbility can comes at the sacrifice of more or 
+ * This extra flexbility can comes at the sacrifice of more or
  * less pixel resolution, depending on your projector and how
- * many surfaces you want to map. 
+ * many surfaces you want to map.
  */
 
 import deadpixel.keystone.*;
@@ -24,14 +24,18 @@ CornerPinSurface surface;
 
 PGraphics offscreen;
 
+int[] rotationPeriod = new int[8]; //[sun, mercury, venus, earth, mars, earth_moon, mars_moon_1, mars_moon_2];
+int[] orbitalPeriod = new int[8]; //[sun, mercury, venus, earth, mars, earth_moon, mars_moon_1, mars_moon_2];
+int[] eccentricity = new int[8]; //[sun, mercury, venus, earth, mars, earth_moon, mars_moon_1, mars_moon_2];
+int[] distanceFromSun = {0, 1, 2, 3, 4, 5, 6, 7}; //[sun, mercury, venus, earth, mars, earth_moon, mars_moon_1, mars_moon_2];
 void setup() {
-  // Keystone will only work with P3D or OPENGL renderers, 
+  // Keystone will only work with P3D or OPENGL renderers,
   // since it relies on texture mapping to deform
   size(800, 600, P3D);
 
   ks = new Keystone(this);
   surface = ks.createCornerPinSurface(400, 300, 20);
-  
+
   // We need an offscreen buffer to draw the surface we
   // want projected
   // note that we're matching the resolution of the
@@ -43,8 +47,8 @@ void setup() {
 void draw() {
 
   // Convert the mouse coordinate into surface coordinates
-  // this will allow you to use mouse events inside the 
-  // surface from your screen. 
+  // this will allow you to use mouse events inside the
+  // surface from your screen.
   PVector surfaceMouse = surface.getTransformedMouse();
 
   // Draw the scene, offscreen
@@ -57,16 +61,18 @@ void draw() {
   // most likely, you'll want a black background to minimize
   // bleeding around your projection area
   background(0);
- 
+
   // render the scene, transformed using the corner pin surface
   surface.render(offscreen);
-  
+  fill(253, 184, 19);  // Sun RGB
+ 
+  ellipse(400, 400, 75, 75);
 }
 
 void keyPressed() {
   switch(key) {
   case 'c':
-    // enter/leave calibration mode, where surfaces can be warped 
+    // enter/leave calibration mode, where surfaces can be warped
     // and moved
     ks.toggleCalibration();
     break;
