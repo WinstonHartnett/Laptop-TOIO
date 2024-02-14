@@ -87,17 +87,33 @@ void setup() {
   
   ks = new Keystone(this);
   surface = ks.createCornerPinSurface(400, 300, 20);
+  
+  offscreen = createGraphics(400, 300, P3D);
 }
 
 void draw() {
   //START TEMPLATE/DEBUG VIEW
-  background(255);
+//  background(0);// black background
   stroke(0);
   long now = System.currentTimeMillis();
+  
+  PVector surfaceMouse = surface.getTransformedMouse();
+  
 
   //draw the "mat"
-  fill(255);
-  rect(matDimension[0] - xOffset, matDimension[1] - yOffset, matDimension[2] - matDimension[0], matDimension[3] - matDimension[1]);
+//  fill(255);
+  //rect(matDimension[0] - xOffset, matDimension[1] - yOffset, matDimension[2] - matDimension[0], matDimension[3] - matDimension[1]);
+    // Draw the scene, offscreen, i.e. the projection mapping part
+  offscreen.beginDraw();
+  offscreen.background(255);
+  offscreen.fill(0, 255, 0);
+  offscreen.ellipse(surfaceMouse.x, surfaceMouse.y, 75, 75);
+  offscreen.endDraw();
+  
+  background(0);
+  
+  surface.render(offscreen);
+  
 
   //draw the cubes
   for (int i = 0; i < nCubes; i++) {

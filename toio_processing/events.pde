@@ -37,6 +37,22 @@ void keyPressed() {
       int[][] notes = {{30, 64, 20}, {30, 63, 20}, {30, 64, 20}, {30, 63, 20}, {30, 64, 20}, {30, 63, 20}, {30, 59, 20}, {30, 62, 20}, {30, 60, 20}, {30, 57, 20}};
       cubes[0].midi(1, notes);
       break;
+      
+    case 'c':
+    // enter/leave calibration mode, where surfaces can be warped
+    // and moved
+    ks.toggleCalibration();
+    break;
+
+    case 'l':
+    // loads the saved layout
+      ks.load();
+      break;
+
+    case 's':
+      // saves the layout
+      ks.save();
+      break;
     
     default:
       break;
