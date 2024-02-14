@@ -84,6 +84,9 @@ void setup() {
   //do not send TOO MANY PACKETS
   //we'll be updating the cubes every frame, so don't try to go too high
   frameRate(30);
+  
+  ks = new Keystone(this);
+  surface = ks.createCornerPinSurface(400, 300, 20);
 }
 
 void draw() {
