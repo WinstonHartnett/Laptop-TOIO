@@ -13,7 +13,12 @@ class Cube {
   int targetx;
   int targety;
   int targetTime;
-  
+
+  boolean targeted;
+  int targetedX;
+  int targetedY;
+  int targetedTheta;
+
   // battery
   int battery;
   
@@ -67,6 +72,12 @@ class Cube {
     //insert code here
     
     lastUpdate = System.currentTimeMillis();
+
+    if (distance(targetedX, x) < 1 && distance(targetedY, y) < 1) {
+      targeted = false;
+      println("not targeted");
+    }
+
     isActive = true;
   }
   
@@ -179,6 +190,10 @@ class Cube {
   //https://toio.github.io/toio-spec/en/docs/ble_motor#motor-control-with-target-specified
   //control, timeout, maxspeed, and speed change are preset
   void target(int x, int y, int theta) {
+    targeted = true;
+    targetedX = x;
+    targetedY = y;
+    targetedTheta = theta;
     motorTarget(id, 0, x, y, theta);
   }
   
@@ -186,12 +201,20 @@ class Cube {
   //https://toio.github.io/toio-spec/en/docs/ble_motor#motor-control-with-target-specified
   //control, timeout, maxspeed, and speed change are preset
   void target(int mode, int x, int y, int theta) {
+    targeted = true;
+    targetedX = x;
+    targetedY = y;
+    targetedTheta = theta;
     motorTarget(id, mode, x, y, theta);
   }
   
   //motor control with target specified (advanced), specification found at:
   //https://toio.github.io/toio-spec/en/docs/ble_motor#motor-control-with-target-specified
   void target(int control, int timeout, int mode, int maxspeed, int speedchange,  int x, int y, int theta) {
+    targeted = true;
+    targetedX = x;
+    targetedY = y;
+    targetedTheta = theta;
     motorTarget(id, control, timeout, mode, maxspeed, speedchange, x, y, theta);
   }
   
