@@ -1,0 +1,210 @@
+import oscP5.*;
+import netP5.*;
+import deadpixel.keystone.*;
+
+//constants
+//The soft limit on how many toios a laptop can handle is in the 10-12 range
+//the more toios you connect to, the more difficult it becomes to sustain the connection
+int nCubes = 12;
+int cubesPerHost = 12;
+int maxMotorSpeed = 115;
+int xOffset;
+int yOffset;
+
+int[] matDimension = {45, 45, 455, 455};
+
+//for OSC
+OscP5 oscP5;
+//where to send the commands to
+NetAddress[] server;
+
+//Projection Mapping stuff
+Keystone ks;
+CornerPinSurface surface;
+PGraphics offscreen;
+
+//we'll keep the cubes here
+Cube[] cubes;
+
+// Planet state stuff (don't edit)
+final int   _ADVANCE_MILLIS = 0; // millis
+//final float SUN_GRAV_PARAMETER = 1.327 * pow(10, 20); // m^3/s^2
+final float SUN_GRAV_PARAMETER = 0.0002958844704; // AU^3/d^2
+final float P_CORRECT = 0.12;
+
+int _lastTarget = millis();
+float currentGravParameter = SUN_GRAV_PARAMETER; // TODO
+float time = 0.0; // days
+
+/////////////////////////////////////////////////////////////////////////////////////////
+// Planetary configuration
+/////////////////////////////////////////////////////////////////////////////////////////
+
+// list of planetary bodies being displayed
+Planet[] planets = {
+  new Planet(1.0, 0.5, 30.0, PI, SUN_GRAV_PARAMETER),
+  new Planet(1.0, 0.0, 30.0, 0.0, SUN_GRAV_PARAMETER),
+};
+
+/////////////////////////////////////////////////////////////////////////////////////////
+
+void settings() {
+  size(1000, 1000);
+}
+
+void setup() {
+  //launch OSC sercer
+  oscP5 = new OscP5(this, 3333);
+  server = new NetAddress[1];
+  server[0] = new NetAddress("127.0.0.1", 3334);
+
+  //create cubes
+  cubes = new Cube[nCubes];
+  for (int i = 0; i< nCubes; ++i) {
+    cubes[i] = new Cube(i);
+  }
+
+  xOffset = matDimension[0] - 45;
+  yOffset = matDimension[1] - 45;
+
+  //do not send TOO MANY PACKETS
+  //we'll be updating the cubes every frame, so don't try to go too high
+  frameRate(30);
+
+}
+
+void draw() {
+  //START TEMPLATE/DEBUG VIEW
+  background(255);
+  stroke(0);
+  long now = System.currentTimeMillis();
+
+  //draw the "mat"
+  fill(255);
+  rect(matDimension[0] - xOffset, matDimension[1] - yOffset, matDimension[2] - matDimension[0], matDimension[3] - matDimension[1]);
+
+  //draw the cubes
+  for (int i = 0; i < nCubes; i++) {
+    cubes[i].checkActive(now);
+    
+    if (cubes[i].isActive) {
+      pushMatrix();
+      translate(cubes[i].x - xOffset, cubes[i].y - yOffset);
+      fill(0);
+      textSize(15);
+      text(i, 0, -20);
+      noFill();
+      rotate(cubes[i].theta * PI/180);
+      rect(-10, -10, 20, 20);
+      line(0, 0, 20, 0);
+      popMatrix();
+    }
+  }
+  //END TEMPLATE/DEBUG VIEW
+
+  //insert code here
+
+  /////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  // {x, y} center of the mat
+  int[] matCenter = {
+    matDimension[2] - ((matDimension[2] - matDimension[0]) / 2),
+    matDimension[3] - ((matDimension[3] - matDimension[1]) / 2)
+  };
+
+  // Identify the maximum velocity, so that we can scale orbital velocities according
+  // to the Toio's maximum functional velocity. 
+  float maxBodiesVelocity = 0.0;
+  float maxBodiesDistance = 0.0;
+
+  //for (int i = 0; i < planets.length; i++) {
+  //  maxBodiesVelocity = max(maxBodiesVelocity, planets[i].solver().maxVelocity(currentGravParameter));
+  //  maxBodiesDistance = max(maxBodiesVelocity, planets[i].solver().majorAxis);
+  //}
+
+  if (millis() - _lastTarget > _ADVANCE_MILLIS) {
+    _lastTarget = millis();
+
+    time += 0.1;
+
+    println("[time] " + time);
+
+    for (int i = 0; i < planets.length; i++) {
+      Planet planet = planets[i];
+      Cube   cube   = cubes[i];
+
+      float[] nextRelativePose  = planet.solver().kepler(time);
+      float   nextRelativeX     = nextRelativePose[0];
+      float   nextRelativeY     = nextRelativePose[1];
+      float   nextRelativeTheta = nextRelativePose[2] * (180.0 / PI) % 360;
+
+      //float[] nextRelativePose  = planet.step();
+      //float   nextRelativeTheta = nextRelativePose[2];
+
+      //float positionError =
+      //  sqrt(pow(cube.targetedX - cube.x, 2) + pow(cube.targetedY - cube.y, 2));
+      //float positionCorrect = positionError * P_CORRECT;
+
+      //// coords system is completely fucked and i can't be bothered
+      //if (nextRelativePose[0] < 0) {
+      //  // left of y-axis
+      //  if (nextRelativePose[1] < 0) {
+      //    // below x-axis
+      //    nextRelativeTheta = nextRelativeTheta;
+      //  } else {
+      //    // above x-axis
+      //    nextRelativeTheta = 180 - nextRelativeTheta;
+      //  }
+      //} else {
+      //  // right of y-axis
+      //  if (nextRelativePose[1] < 0) {
+      //    // below x-axis
+      //    nextRelativeTheta = 360 - nextRelativeTheta;
+      //  } else {
+      //    // above x-axis
+      //    nextRelativeTheta = 180 - nextRelativeTheta;
+      //  }
+      //}
+
+      // Next Toio target position...
+      float[] nextPose = {
+        matCenter[0] + (nextRelativeX * 100),
+        matCenter[1] - (nextRelativeY * 100),
+        nextRelativeTheta,
+        nextRelativePose[3],
+        nextRelativePose[4],
+      };
+
+      println(
+        "[pose "
+        + i
+        + "] x: "    + round(nextPose[0])
+        + " y: "     + round(nextPose[1])
+        + " theta: " + round(nextPose[2])
+        + " vx: "    + nextPose[3] * 100
+        + " vy: "    + nextPose[4] * 100
+        //+ " error: " + round(positionError)
+      );
+
+      //float nextToioVelocity =
+      //  10 * (planet.solver().instantVelocity(planet.orbit(), currentGravParameter) / maxBodiesVelocity);
+
+      //nextToioVelocity = nextToioVelocity + positionCorrect;
+      //nextToioVelocity = min(nextToioVelocity, 40);
+
+      //println(planet.solver().kepler(time));
+
+      ////   void target(int control, int timeout, int mode, int maxspeed, int speedchange,  int x, int y, int theta) {
+      cube.target(
+        0,
+        100,
+        0,
+        (int)(30),
+        0,
+        (int)nextPose[0],
+        (int)nextPose[1],
+        (int)nextPose[2]
+      );
+    }
+  }
+}

@@ -89,8 +89,6 @@ void setup() {
   surface = ks.createCornerPinSurface(400, 300, 20);
   
   offscreen = createGraphics(400, 300, P3D);
-  
-  //img = load("EmptySpace.jpeg");
 }
 
 void draw() {
@@ -106,15 +104,15 @@ void draw() {
 //  fill(255);
   //rect(matDimension[0] - xOffset, matDimension[1] - yOffset, matDimension[2] - matDimension[0], matDimension[3] - matDimension[1]);
     // Draw the scene, offscreen, i.e. the projection mapping part
-//  offscreen.beginDraw();
-//  offscreen.background(255);
-//  offscreen.fill(0, 255, 0);
-//  offscreen.ellipse(surfaceMouse.x, surfaceMouse.y, 75, 75);
-//  offscreen.endDraw();
+  offscreen.beginDraw();
+  offscreen.background(255);
+  offscreen.fill(0, 255, 0);
+  offscreen.ellipse(surfaceMouse.x, surfaceMouse.y, 75, 75);
+  offscreen.endDraw();
   
   background(0);
   
-//  surface.render(offscreen);
+  surface.render(offscreen);
   
 
   //draw the cubes
