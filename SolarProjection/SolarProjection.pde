@@ -28,6 +28,17 @@ int[] rotationPeriod = new int[8]; //[sun, mercury, venus, earth, mars, earth_mo
 int[] orbitalPeriod = new int[8]; //[sun, mercury, venus, earth, mars, earth_moon, mars_moon_1, mars_moon_2];
 int[] eccentricity = new int[8]; //[sun, mercury, venus, earth, mars, earth_moon, mars_moon_1, mars_moon_2];
 int[] distanceFromSun = {0, 1, 2, 3, 4, 5, 6, 7}; //[sun, mercury, venus, earth, mars, earth_moon, mars_moon_1, mars_moon_2];
+float centerOfRotationX = 725;
+float centerOfRotationY = 475;
+float mercDistanceToSun = 150;
+float mercSpeed = (float)Math.PI/100;
+float mercRadius = 75; //Replace this number
+float radian = mercSpeed * 1; //1 replaced for timeInterval
+float drawX = centerOfRotationX + mercDistanceToSun * (float)Math.cos(radian);
+float drawY = centerOfRotationY + mercDistanceToSun * (float)Math.sin(radian);
+float timeInterval =0;
+
+
 void setup() {
   // Keystone will only work with P3D or OPENGL renderers,
   // since it relies on texture mapping to deform
@@ -65,8 +76,16 @@ void draw() {
   // render the scene, transformed using the corner pin surface
   surface.render(offscreen);
   fill(253, 184, 19);  // Sun RGB
- 
-  ellipse(725, 475, 75, 75);
+  ellipse(725, 475, 75, 75); //Sun
+  
+  radian = mercSpeed * timeInterval; //1 replaced for timeInterval
+  drawX = centerOfRotationX + mercDistanceToSun * (float)Math.cos(radian);
+  drawY = centerOfRotationY + mercDistanceToSun * (float)Math.sin(radian);
+  
+  fill(183, 184, 185);  //Mercury RGB
+  ellipse(drawX, drawY, 50, 50); //Mercury
+  timeInterval += 1;
+  
 }
 
 void keyPressed() {
