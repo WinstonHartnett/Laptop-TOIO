@@ -21,8 +21,6 @@ float solveEccentricAnomaly(float e, float M) {
 }
 
 class OrbitSolver {
-  //private final float SPEED_MULT = 100.0;
-
   private float majorAxis;
   private float eccentricity;
   private float periapsis;
@@ -37,6 +35,12 @@ class OrbitSolver {
     gravParameter = gp;
   }
 
+  // returns:
+  // - x     (AU)
+  // - y     (AU)
+  // - theta (rad)
+  // - vx    (AU/d)
+  // - vy    (AU/d)
   float[] kepler(float t) {
     // from wikipedia: Kepler's laws of planetary motion
     float n = (2 * PI) / period;
@@ -60,78 +64,34 @@ class OrbitSolver {
     return res;
   }
 
-  //float maxVelocity() {
-  //  // when closest to the periapsis
-  //}
+  float maxVelocity() {
+    // when closest to the periapsis
+    float[] pose = kepler(0.0);
 
-  //float distance(float orbit) {
-  //  float top = majorAxis * (1 - pow(eccentricity, 2));
-  //  float bot = 1 - (eccentricity * cos(orbit));
+    return sqrt(pow(pose[3], 2) + pow(pose[4], 2));
+  }
 
-  //  return top / bot;
-  //}
+  // Ramanujan approximation
+  float perimeter() {
+    float minorAxis = majorAxis * sqrt(1 - pow(eccentricity, 2));
 
-  //float stepOrbit(float orbit) {
-  //  float inner = orbit + (1 / (SPEED_MULT * pow(distance(orbit), 2)));
+    return (3 * (majorAxis + minorAxis)) - sqrt((3 * majorAxis + minorAxis) * (majorAxis + 3 * minorAxis));
+  }
 
-  //  return inner % (2 * PI);
-  //}
-
-  //float[] stepPosition(float orbit) {
-  //  float[] res = {
-  //    cos(orbit + periapsis) * distance(orbit),
-  //    sin(orbit + periapsis) * distance(orbit),
-  //  };
-
-  //  return res;
-  //}
-
-  //float tangentAngle(float orbit) {
-  //  float a = majorAxis;
-  //  float e = eccentricity;
-
-  //  float b = sqrt(pow(a, 2) * (1 - pow(e, 2))); // solve for b using major axis and eccentricity
-  //  float slope = -(b * cos(orbit)) / (a * sin(orbit)); // note: orbit == 0 will cause problems
-  //  float angle = atan(slope);
-
-  //  return angle;
-  //}
-
-//  float instantVelocity(float orbit, float gravParameter) {
-//    return sqrt(gravParameter * ((2 / distance(orbit)) - (1 / majorAxis)));
-//  }
-
-//  float maxVelocity(float gravParameter) {
-//    return instantVelocity(periapsis, gravParameter);
-//  }
+  // max distance from the focus (the sun or whatever's being orbited)
+  float maxDistance() {
+    return (2 * majorAxis) - periapsis;
+  }
 }
 
 class Planet {
   private OrbitSolver solver;
-  //private float orbit;
 
   Planet(float a, float e, float P, float p, float gp) {
-    //assert(o != 0.0);
     solver = new OrbitSolver(a, e, P, p, gp);
-    //orbit = o;
   }
 
   public OrbitSolver solver() {
     return solver;
   }
-
-//  public float orbit() {
-//    return orbit;
-//  }
-
-  //public float[] step() {
-  //  orbit = solver().stepOrbit(orbit);
-    
-  //  float   nextRelativeTheta = solver().tangentAngle(orbit) * (180 / PI);
-  //  float[] nextRelativePos   = solver().stepPosition(orbit);
-
-  //  float[] res = { nextRelativePos[0], nextRelativePos[1], nextRelativeTheta, };
-
-  //  return res;
-  //}
 }
