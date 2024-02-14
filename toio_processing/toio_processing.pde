@@ -1,5 +1,6 @@
 import oscP5.*;
 import netP5.*;
+import deadpixel.keystone.*;
 
 //constants
 //The soft limit on how many toios a laptop can handle is in the 10-12 range
@@ -11,6 +12,10 @@ int xOffset;
 int yOffset;
 
 int[] matDimension = {45, 45, 455, 455};
+
+Keystone ks;
+CornerPinSurface surface;
+PGraphics offscreen;
 
 //for OSC
 OscP5 oscP5;
@@ -58,10 +63,10 @@ float maxOrbitalDistance = 300; // board units
 /////////////////////////////////////////////////////////////////////////////////////////
 
 void settings() {
-  size(1000, 1000);
+  size(1000, 1000, P3D); //Added capability with P3D servers for projection mapping
 }
 
-void setup() {
+void setup() {  
   //launch OSC sercer
   oscP5 = new OscP5(this, 3333);
   server = new NetAddress[1];
