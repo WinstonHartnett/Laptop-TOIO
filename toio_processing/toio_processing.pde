@@ -39,21 +39,29 @@ float error_d = 0.0;
 /////////////////////////////////////////////////////////////////////////////////////////
 
 // list of planetary bodies being displayed
-Planet[] planets = {
+Body[] bodies = {
   // Planet(float majorAxis, float eccentricity, float period, float periapsis, float gravitationalParameter)
-  new Planet(1.0, 0.206, 87.0, PI,  SUN_GRAV_PARAMETER),
-  new Planet(2.5, 0.007, 224.0, 0.0, SUN_GRAV_PARAMETER),
+  // - majorAxis: size of ellipse major axis (AU)
+  // - period: in days
+  // - periapsis: closest distance to orbited object (like the Sun or Earth)
+  // - gravitationalParameter: G * (m_1 + m_2)             en.wikipedia.org/wiki/Standard_gravitational_parameter
+  new Body("Mercury", 0.39, 0.206,  88.0, 0.0,  SUN_GRAV_PARAMETER),
+  new Body("Venus",   0.76, 0.007, 225.0, 0.0, SUN_GRAV_PARAMETER),
+  new Body("Earth",   1.00, 0.017, 365.0, 0.0, SUN_GRAV_PARAMETER),
+  new Body("Mars",    1.52, 0.093, 687.0, 0.0, SUN_GRAV_PARAMETER),
 };
+
+// Dec. 28, 2022
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // Toio configuration
 /////////////////////////////////////////////////////////////////////////////////////////
 
 // Maximum speed (in board units/s) that the Toio can move at.
-float maxSpeed = 40;            // board units/s
+float maxSpeed = 50;            // board units/s
 // All orbits will be scaled such that the largest orbit's maximum distance from the sun
 // matches this.
-float maxOrbitalDistance = 300; // board units
+float maxOrbitalDistance = 340; // board units
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
@@ -128,21 +136,17 @@ void draw() {
   // Identify the maximum velocity, so that we can scale orbital velocities according
   // to the Toio's maximum functional velocity. 
   float maxBodiesVelocity  = 0.0;
-  float maxBodiesPerimeter = 0.0;
   float maxBodiesDistance  = 0.0;
 
-  for (int i = 0; i < planets.length; i++) {
-    maxBodiesVelocity  = max(maxBodiesVelocity,  planets[i].solver().maxVelocity());
-    maxBodiesPerimeter = max(maxBodiesPerimeter, planets[i].solver().perimeter());
-    maxBodiesDistance  = max(maxBodiesDistance,  planets[i].solver().maxDistance());
+  for (int i = 0; i < bodies.length; i++) {
+    maxBodiesVelocity  = max(maxBodiesVelocity,  bodies[i].maxVelocity());
+    maxBodiesDistance  = max(maxBodiesDistance,  bodies[i].maxDistance());
   }
 
   float coordsScale = maxOrbitalDistance / maxBodiesDistance;
   float timeScale   = (maxSpeed / (maxBodiesVelocity * coordsScale));
 
   float timeStep = (1.0 / 30.0) * timeScale; // essentially 1 second = 1 day
-
-  println(timeStep);
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Toio Movement
@@ -152,42 +156,14 @@ void draw() {
 
   println("[time] " + time);
 
-  for (int i = 0; i < planets.length; i++) {
-    Planet planet = planets[i];
-    Cube   cube   = cubes[i];
+  for (int i = 0; i < bodies.length; i++) {
+    Body body = bodies[i];
+    Cube cube = cubes[i];
 
-    float[] nextRelativePose  = planet.solver().kepler(time);
+    float[] nextRelativePose  = body.kepler(time);
     float   nextRelativeX     = nextRelativePose[0];
     float   nextRelativeY     = nextRelativePose[1];
     float   nextRelativeTheta = nextRelativePose[2] * (180.0 / PI) % 360;
-
-    //float[] nextRelativePose  = planet.step();
-    //float   nextRelativeTheta = nextRelativePose[2];
-
-    //float positionError =
-    //  sqrt(pow(cube.targetedX - cube.x, 2) + pow(cube.targetedY - cube.y, 2));
-    //float positionCorrect = positionError * P_CORRECT;
-
-    //// coords system is completely fucked and i can't be bothered
-    //if (nextRelativePose[0] < 0) {
-    //  // left of y-axis
-    //  if (nextRelativePose[1] < 0) {
-    //    // below x-axis
-    //    nextRelativeTheta = nextRelativeTheta;
-    //  } else {
-    //    // above x-axis
-    //    nextRelativeTheta = 180 - nextRelativeTheta;
-    //  }
-    //} else {
-    //  // right of y-axis
-    //  if (nextRelativePose[1] < 0) {
-    //    // below x-axis
-    //    nextRelativeTheta = 360 - nextRelativeTheta;
-    //  } else {
-    //    // above x-axis
-    //    nextRelativeTheta = 180 - nextRelativeTheta;
-    //  }
-    //}
 
     // Next Toio target position...
     float[] nextPose = {
@@ -213,17 +189,10 @@ void draw() {
     );
 
     circle(nextPose[0], nextPose[1], 20);
+
     text("planet " + i, nextPose[0] + 15, nextPose[1] + 15);
 
-    //float nextToioVelocity =
-    //  10 * (planet.solver().instantVelocity(planet.orbit(), currentGravParameter) / maxBodiesVelocity);
-
-    //nextToioVelocity = nextToioVelocity + positionCorrect;
-    //nextToioVelocity = min(nextToioVelocity, 40);
-
-    //println(planet.solver().kepler(time));
-
-    ////   void target(int control, int timeout, int mode, int maxspeed, int speedchange,  int x, int y, int theta) {
+    //   void target(int control, int timeout, int mode, int maxspeed, int speedchange,  int x, int y, int theta) {
     cube.target(
       0,
       100,

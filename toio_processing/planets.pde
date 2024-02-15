@@ -20,14 +20,15 @@ float solveEccentricAnomaly(float e, float M) {
   }
 }
 
-class OrbitSolver {
+class Body {
+  private String name;
   private float majorAxis;
   private float eccentricity;
   private float periapsis;
   private float period;
   private float gravParameter;
 
-  OrbitSolver(float a, float e, float P, float p, float gp) {
+  Body(String name, float a, float e, float P, float p, float gp) {
     majorAxis = a;
     eccentricity = e;
     period = P;
@@ -81,17 +82,5 @@ class OrbitSolver {
   // max distance from the focus (the sun or whatever's being orbited)
   float maxDistance() {
     return (2 * majorAxis) - periapsis;
-  }
-}
-
-class Planet {
-  private OrbitSolver solver;
-
-  Planet(float a, float e, float P, float p, float gp) {
-    solver = new OrbitSolver(a, e, P, p, gp);
-  }
-
-  public OrbitSolver solver() {
-    return solver;
   }
 }
