@@ -80,6 +80,7 @@ PImage img_mar;
 PImage sun;
 PImage star;
 String[] names = new String[4];
+float i_sun = 0;
 
 void setup() {  
   //launch OSC sercer
@@ -191,7 +192,14 @@ void draw() {
   offscreen.beginDraw();
   offscreen.background(255);
   offscreen.image(star, 0, 0, 450, 450);
-  offscreen.image(sun, 182.5, 182.5, 40, 40);
+  offscreen.pushMatrix();
+  offscreen.translate(202.5, 202.5);
+  i_sun = i_sun - 0.01;
+  offscreen.imageMode(CENTER);
+  offscreen.rotate(i_sun);
+  offscreen.image(sun, 0, 0, 40, 40);
+  offscreen.popMatrix();
+  offscreen.imageMode(CORNER);
   offscreen.fill(0, 255, 0);
   for (int i = 0; i < bodies.length; i++) {
     Body body = bodies[i];
@@ -225,16 +233,40 @@ void draw() {
       + " vy: "    + nextPose[4]
     );
     if(i == 0){
-      offscreen.image(img_mer, nextPose[0]-55, nextPose[1]-55, 20, 20);
+      offscreen.pushMatrix();
+      offscreen.translate(nextPose[0]-55, nextPose[1]-55);
+      offscreen.imageMode(CENTER);
+      offscreen.rotate(i_sun);
+      offscreen.image(img_mer, 0, 0, 20, 20);
+      offscreen.popMatrix();
+      offscreen.imageMode(CORNER);
     }
     if(i == 1){
-      offscreen.image(img_ven, nextPose[0]-55, nextPose[1]-55, 20, 20);
+      offscreen.pushMatrix();
+      offscreen.translate(nextPose[0]-55, nextPose[1]-55);
+      offscreen.imageMode(CENTER);
+      offscreen.rotate(-0.05 * i_sun);
+      offscreen.image(img_ven, 0, 0, 20, 20);
+      offscreen.popMatrix();
+      offscreen.imageMode(CORNER);
     }
     if(i == 2){
-      offscreen.image(img_ear, nextPose[0]-55, nextPose[1]-55, 20, 20);
+      offscreen.pushMatrix();
+      offscreen.translate(nextPose[0]-55, nextPose[1]-55);
+      offscreen.imageMode(CENTER);
+      offscreen.rotate(timeScale*i_sun);
+      offscreen.image(img_ear, 0, 0, 20, 20);
+      offscreen.popMatrix();
+      offscreen.imageMode(CORNER);
     }
     if(i == 3){
-      offscreen.image(img_mar, nextPose[0]-55, nextPose[1]-55, 20, 20);
+      offscreen.pushMatrix();
+      offscreen.translate(nextPose[0]-55, nextPose[1]-55);
+      offscreen.imageMode(CENTER);
+      offscreen.rotate(timeScale*i_sun);
+      offscreen.image(img_mar, 0, 0, 20, 20);
+      offscreen.popMatrix();
+      offscreen.imageMode(CORNER);
     }
     
   
