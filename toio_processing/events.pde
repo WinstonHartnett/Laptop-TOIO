@@ -75,28 +75,28 @@ void mouseReleased() {
 
 //execute code when button on toio is pressed
 void buttonDown(int id) {
-    println("Button Pressed!");
+    //println("Button Pressed!");
     
     //insert code here
 }
 
 //execute code when button on toio is released
 void buttonUp(int id) {
-    println("Button Released!");
+    //println("Button Released!");
     
     //insert code here
 }
 
 //execute code when toio detects collision
 void collision(int id) {
-    println("Collision Detected!");
+    //println("Collision Detecte.d!");
     
     //insert code here
 }
 
 //execute code when toio detects double tap
 void doubleTap(int id) {
-    println("Double Tap Detected!");
+    //println("Double Tap Detected!");
     
     //insert code here
 }

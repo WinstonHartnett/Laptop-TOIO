@@ -26,14 +26,18 @@ class Body {
   private float eccentricity;
   private float periapsis;
   private float period;
+  private float rotationPeriod;
   private float gravParameter;
+  private Body parentBody;
 
-  Body(String name, float a, float e, float P, float p, float gp) {
+  Body(String name, Body parent, float a, float e, float P, float r, float p, float gp) {
     majorAxis = a;
     eccentricity = e;
     period = P;
     periapsis = p;
+    rotationPeriod = r;
     gravParameter = gp;
+    parentBody = parent;
   }
 
   // returns:

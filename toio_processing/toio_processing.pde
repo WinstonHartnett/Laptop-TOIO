@@ -25,9 +25,14 @@ NetAddress[] server;
 //we'll keep the cubes here
 Cube[] cubes;
 
+final int BUTTON_THRESHOLD = 500;
+int BUTTON_LAST_PRESS = 0;
+int[] pausePosition = {};
+
 // Planet state stuff (don't edit)
-//final float SUN_GRAV_PARAMETER = 1.327 * pow(10, 20); // m^3/s^2
-final float SUN_GRAV_PARAMETER = 0.0002958844704; // AU^3/d^2
+final float SUN_GRAV_PARAMETER   = 0.0002958844704;        // AU^3/d^2
+final float EARTH_GRAV_PARAMETER = 0.000000000888768273;   // AU^(3)/d^2
+final float MARS_GRAV_PARAMETER  = 0.00000000009547681253; // AU^(3)/d^2
 
 final float P_CORRECT = 1.0;
 final float I_CORRECT = 0.1;
@@ -39,22 +44,29 @@ float time = 0.0; // days
 float error_i = 0.0;
 float error_d = 0.0;
 
+boolean paused = false;
+
 /////////////////////////////////////////////////////////////////////////////////////////
 // Planetary configuration
 /////////////////////////////////////////////////////////////////////////////////////////
 
-// list of planetary bodies being displayed
-Body[] bodies = {
-  // Planet(float majorAxis, float eccentricity, float period, float periapsis, float gravitationalParameter)
-  // - majorAxis: size of ellipse major axis (AU)
-  // - period: in days
-  // - periapsis: closest distance to orbited object (like the Sun or Earth)
-  // - gravitationalParameter: G * (m_1 + m_2)             en.wikipedia.org/wiki/Standard_gravitational_parameter
-  new Body("Mercury", 0.39, 0.206,  88.0, 0.0,  SUN_GRAV_PARAMETER),
-  new Body("Venus",   0.76, 0.007, 225.0, 0.0, SUN_GRAV_PARAMETER),
-  new Body("Earth",   1.00, 0.017, 365.0, 0.0, SUN_GRAV_PARAMETER),
-  new Body("Mars",    1.52, 0.093, 687.0, 0.0, SUN_GRAV_PARAMETER),
+Body sun     = new Body("Sun",     null, 0.0,  0.0,     0.0, 24.47, 0.0, SUN_GRAV_PARAMETER);
+Body mercury = new Body("Mercury",  sun, 0.39, 0.206,  88.0,  59.0, 0.0, SUN_GRAV_PARAMETER);
+Body venus   = new Body("Venus",    sun, 0.76, 0.007, 225.0, 243.0, 0.0, SUN_GRAV_PARAMETER);
+Body earth   = new Body("Earth",    sun,       1.00, 0.017,  365.0, 1.0, 0.0, SUN_GRAV_PARAMETER);
+Body mars    = new Body("Mars",     sun,       1.52, 0.093,  687.0, 1.0, 0.0, SUN_GRAV_PARAMETER);
+Body moon    = new Body("Moon",   earth,    0.00256, 0.055,   27.0, 0.0, 0.0, EARTH_GRAV_PARAMETER); 
+Body phobos  = new Body("Phobos",  mars, 0.00006268, 0.0151, 0.319, 0.0, 0.0, MARS_GRAV_PARAMETER);
+Body deimos  = new Body("Deimos",  mars, 0.00015682, 0.00033, 1.25, 0.0, 0.0, MARS_GRAV_PARAMETER);
+
+// first element is the orbited body
+Body[][] bodiesConfig = {
+  { sun, mercury, venus, earth, mars },
+  { earth, moon },
+  { mars, phobos, deimos },
 };
+
+Body[] bodies = bodiesConfig[0]; // current bodies being displayed
 
 // Dec. 28, 2022
 
@@ -67,6 +79,13 @@ float maxSpeed = 50;            // board units/s
 // All orbits will be scaled such that the largest orbit's maximum distance from the sun
 // matches this.
 float maxOrbitalDistance = 340; // board units
+
+
+// {x, y} center of the mat
+int[] matCenter = {
+  matDimension[2] - ((matDimension[2] - matDimension[0]) / 2),
+  matDimension[3] - ((matDimension[3] - matDimension[1]) / 2)
+};
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
@@ -99,6 +118,14 @@ void setup() {
   offscreen = createGraphics(400, 300, P3D);
   
   //img = load("EmptySpace.jpeg");
+
+  //pausePosition = new int[] { cubes[0].x, cubes[0].y };
+  cubes[0].led(100000000, 0, 255, 0);
+
+  cubes[1].target(60, 60, 0);
+  cubes[2].target(60, 300, 0);
+  cubes[3].target(300, 60, 0);
+  cubes[4].target(300, 300, 0);
 }
 
 void draw() {
@@ -149,11 +176,66 @@ void draw() {
 
   /////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-  // {x, y} center of the mat
-  int[] matCenter = {
-    matDimension[2] - ((matDimension[2] - matDimension[0]) / 2),
-    matDimension[3] - ((matDimension[3] - matDimension[1]) / 2)
-  };
+  if (millis() - BUTTON_LAST_PRESS > BUTTON_THRESHOLD) {
+    // Toggle the pause state.
+    if (cubes[0].buttonDown) {
+      paused = !paused;
+
+      BUTTON_LAST_PRESS = millis();
+
+      if (paused) {
+        cubes[0].led(1000000, 255, 0, 0);
+        cubes[0].midi(50, 50, 100);
+      } else {
+        cubes[0].led(1000000, 0, 255, 0);
+        cubes[0].midi(50, 65, 100);
+      }
+
+      if (cubes[0].isActive) {
+        pausePosition = new int[] { cubes[0].x, cubes[0].y };
+      } else {
+        pausePosition = null;
+      }
+    }
+
+    // Handle double-tapping planet selection.
+    if (paused) {
+      if (cubes[0].doubleTap) {
+        bodies = bodiesConfig[0];
+        cubes[0].midi(50, 65, 100);
+        BUTTON_LAST_PRESS = millis();
+      }
+
+      for (int i = 1; i < cubes.length; i++) {
+        if (cubes[i].doubleTap) {
+          if (i >= bodies.length) {
+            break;
+          }
+
+          // find the corresponding planet index in the current view
+          Body body = bodies[i];
+
+          boolean foundBody = false;
+
+          // set the new body config
+          for (int b = 0; b < bodiesConfig.length; b++) {
+            if (bodiesConfig[b][0] == body) {
+              bodies = bodiesConfig[b];
+              foundBody = true;
+            }
+          }
+
+          if (!foundBody) {
+            cubes[i].midi(100, 20, 100);
+          } else {
+            cubes[i].midi(100, 65, 100);
+          }
+
+          BUTTON_LAST_PRESS = millis();
+        }
+      }
+    }
+  }
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////////
   // Identifying movement constraints
@@ -164,7 +246,7 @@ void draw() {
   float maxBodiesVelocity  = 0.0;
   float maxBodiesDistance  = 0.0;
 
-  for (int i = 0; i < bodies.length; i++) {
+  for (int i = 1; i < bodies.length; i++) { // skip the central body
     maxBodiesVelocity  = max(maxBodiesVelocity,  bodies[i].maxVelocity());
     maxBodiesDistance  = max(maxBodiesDistance,  bodies[i].maxDistance());
   }
@@ -178,11 +260,31 @@ void draw() {
   // Toio Movement
   ////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-  time += timeStep;
+  if (!paused) {
+    time += timeStep;
+  } else {
+    if (cubes[0].isActive) {
+      if (pausePosition != null) {
+        int[] diff = { pausePosition[0] - cubes[0].x, pausePosition[1] - cubes[0].y };
 
-  println("[time] " + time);
+        float mag = sqrt(pow(diff[0], 2) + pow(diff[1], 2)) * 0.001 * timeScale;
 
-  for (int i = 0; i < bodies.length; i++) {
+        if (diff[1] < 0) {
+          time -= mag;
+        } else {
+          time += mag;
+        }
+      } else {
+        pausePosition = new int[] { cubes[0].x, cubes[0].y };
+      }
+    } else {
+      pausePosition = null;
+    }
+  }
+
+  //println("[time] " + time);
+
+  for (int i = 1; i < bodies.length; i++) { // skip the central body
     Body body = bodies[i];
     Cube cube = cubes[i];
 
@@ -203,16 +305,6 @@ void draw() {
     float positionError =
       sqrt(pow(cube.targetedX - cube.x, 2) + pow(cube.targetedY - cube.y, 2));
     float nextVelocity = positionError * P_CORRECT;
-
-    println(
-      "[pose "
-      + i
-      + "] x: "    + round(nextPose[0])
-      + " y: "     + round(nextPose[1])
-      + " theta: " + round(nextPose[2])
-      + " vx: "    + nextPose[3]
-      + " vy: "    + nextPose[4]
-    );
 
     circle(nextPose[0], nextPose[1], 20);
 
