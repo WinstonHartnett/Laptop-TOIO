@@ -53,7 +53,11 @@ void keyPressed() {
       // saves the layout
       ks.save();
       break;
-    
+      
+    case 't': //t for testing
+      planetFocus = !planetFocus;
+      break;
+      
     default:
       break;
   }

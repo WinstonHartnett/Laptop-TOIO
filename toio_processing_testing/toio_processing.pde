@@ -17,7 +17,10 @@ Keystone ks;
 CornerPinSurface surface;
 PGraphics offscreen;
 
-PImage img;
+PImage Green_square;
+PImage Blue_square;
+
+boolean planetFocus = false;
 
 //for OSC
 OscP5 oscP5;
@@ -90,7 +93,8 @@ void setup() {
   ks = new Keystone(this);
   surface = ks.createCornerPinSurface(400, 300, 20);
   
-  img = loadImage("Green_test_square.png");
+  Green_square = loadImage("Green_test_square.png");
+  Blue_square = loadImage("Blue_test_square.png");
   
   offscreen = createGraphics(400, 300, P3D);
 }
@@ -138,8 +142,7 @@ void draw() {
 
   // {x, y} center of the mat
   int[] matCenter = {
-    matDimension[2] - ((matDimension[2] - matDimension[0]) / 2),
-    matDimension[3] - ((matDimension[3] - matDimension[1]) / 2)
+    200, 150
   };
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -236,12 +239,19 @@ void draw() {
 
     offscreen.beginDraw();
     offscreen.background(255);
-    offscreen.image(img, 0, 0, 400, 300);
-    offscreen.fill(255, 0, 0);
-    offscreen.ellipse(surfaceMouse.x, surfaceMouse.y, 75, 75);
-    offscreen.fill(0,0,0);
-    offscreen.circle(nextPose[0], nextPose[1], 20);
-    offscreen.text("planet " + i, nextPose[0] + 15, nextPose[1] + 15);
+    if(!planetFocus){
+      offscreen.image(Green_square, 0, 0, 400, 300);
+      offscreen.fill(0,0,0);
+      offscreen.circle(nextPose[0], nextPose[1], 20);
+      offscreen.text("planet " + i, nextPose[0] + 15, nextPose[1] + 15);
+    } else{
+      offscreen.image(Blue_square, 0, 0, 400, 300);
+      offscreen.fill(0, 0, 0);
+      offscreen.fill(255, 0, 0);
+      offscreen.ellipse(surfaceMouse.x, surfaceMouse.y, 75, 75);
+    }
+    
+    
     offscreen.endDraw();
     
     surface.render(offscreen);
