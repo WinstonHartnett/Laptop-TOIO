@@ -96,10 +96,14 @@ PImage img_mer;
 PImage img_ven;
 PImage img_ear;
 PImage img_mar;
-PImage img_sun;
+PImage img_mon;
+PImage img_pho;
+PImage img_dei;
+PImage sunI;
 PImage star;
 String[] names = new String[4];
 float i_sun = 0;
+PImage[] imgs = {img_mer, img_ven, img_ear, img_mar, sunI};
 
 void setup() {  
   //launch OSC sercer
@@ -128,7 +132,10 @@ void setup() {
   img_ven = loadImage("venus.png");
   img_ear = loadImage("earth.png");
   img_mar = loadImage("mars.png");
-  img_sun = loadImage("sun.png");
+  img_mon = loadImage("moon.png");
+  img_pho = loadImage("phobos.png");
+  img_dei = loadImage("deimos.png");
+  sunI = loadImage("sun.png");
   star = loadImage("night.png");
   ks = new Keystone(this);
   surface = ks.createCornerPinSurface(405, 405, 20);
@@ -297,14 +304,6 @@ void draw() {
   offscreen.beginDraw();
   offscreen.background(255);
   offscreen.image(star, 0, 0, 450, 450);
-  offscreen.pushMatrix();
-  offscreen.translate(202.5, 202.5);
-  i_sun = i_sun - 0.01;
-  offscreen.imageMode(CENTER);
-  offscreen.rotate(i_sun);
-  offscreen.image(img_sun, 0, 0, 40, 40);
-  offscreen.popMatrix();
-  offscreen.imageMode(CORNER);
   offscreen.fill(0, 255, 0);
 
   for (int i = 1; i < bodies.length; i++) {
@@ -338,44 +337,101 @@ void draw() {
       + " vx: "    + nextPose[3]
       + " vy: "    + nextPose[4]
     );
-    if(i == 0){
+    if(bodies[0] == sun){
+        offscreen.pushMatrix();
+        offscreen.translate(202.5, 202.5);
+        i_sun = i_sun - 0.01;
+        offscreen.imageMode(CENTER);
+        offscreen.rotate(i_sun);
+        offscreen.image(sunI, 0, 0, 40, 40);
+        offscreen.popMatrix();
+        offscreen.imageMode(CORNER);
+      if(i == 1){
+        offscreen.pushMatrix();
+        offscreen.translate(nextPose[0]-55, nextPose[1]-55);
+        offscreen.imageMode(CENTER);
+        offscreen.rotate(i_sun);
+        offscreen.image(img_mer, 0, 0, 20, 20);
+        offscreen.popMatrix();
+        offscreen.imageMode(CORNER);
+      }
+      if(i == 2){
+        offscreen.pushMatrix();
+        offscreen.translate(nextPose[0]-55, nextPose[1]-55);
+        offscreen.imageMode(CENTER);
+        offscreen.rotate(-0.05 * i_sun);
+        offscreen.image(img_ven, 0, 0, 20, 20);
+        offscreen.popMatrix();
+        offscreen.imageMode(CORNER);
+      }
+      if(i == 3){
+        offscreen.pushMatrix();
+        offscreen.translate(nextPose[0]-55, nextPose[1]-55);
+        offscreen.imageMode(CENTER);
+        offscreen.rotate(timeScale*i_sun);
+        offscreen.image(img_ear, 0, 0, 20, 20);
+        offscreen.popMatrix();
+        offscreen.imageMode(CORNER);
+      }
+      if(i == 4){
+        offscreen.pushMatrix();
+        offscreen.translate(nextPose[0]-55, nextPose[1]-55);
+        offscreen.imageMode(CENTER);
+        offscreen.rotate(timeScale*i_sun);
+        offscreen.image(img_mar, 0, 0, 20, 20);
+        offscreen.popMatrix();
+        offscreen.imageMode(CORNER);
+      }
+    }
+    if(bodies[0] == earth){
+        offscreen.pushMatrix();
+        offscreen.translate(202.5, 202.5);
+        i_sun = i_sun - 0.01;
+        offscreen.imageMode(CENTER);
+        offscreen.rotate(i_sun);
+        offscreen.image(img_ear, 0, 0, 40, 40);
+        offscreen.popMatrix();
+        offscreen.imageMode(CORNER);
+      if(i == 1){
+        offscreen.pushMatrix();
+        offscreen.translate(nextPose[0]-55, nextPose[1]-55);
+        offscreen.imageMode(CENTER);
+        offscreen.rotate(timeScale*i_sun);
+        offscreen.image(img_mon, 0, 0, 20, 20);
+        offscreen.popMatrix();
+        offscreen.imageMode(CORNER);
+      }
+    }
+    if(bodies[0] == mars) {
       offscreen.pushMatrix();
-      offscreen.translate(nextPose[0]-55, nextPose[1]-55);
+      offscreen.translate(202.5, 202.5);
+      i_sun = i_sun - 0.01;
       offscreen.imageMode(CENTER);
       offscreen.rotate(i_sun);
-      offscreen.image(img_mer, 0, 0, 20, 20);
+      offscreen.image(img_mar, 0, 0, 40, 40);
       offscreen.popMatrix();
       offscreen.imageMode(CORNER);
+      if(i == 1){
+        offscreen.pushMatrix();
+        offscreen.translate(nextPose[0]-55, nextPose[1]-55);
+        offscreen.imageMode(CENTER);
+        offscreen.rotate(timeScale*i_sun);
+        offscreen.image(img_pho, 0, 0, 20, 20);
+        offscreen.popMatrix();
+        offscreen.imageMode(CORNER);
+      }
+      if(i == 2){
+        offscreen.pushMatrix();
+        offscreen.translate(nextPose[0]-55, nextPose[1]-55);
+        offscreen.imageMode(CENTER);
+        offscreen.rotate(timeScale*i_sun);
+        offscreen.image(img_dei, 0, 0, 20, 20);
+        offscreen.popMatrix();
+        offscreen.imageMode(CORNER);
+      }
     }
-    if(i == 1){
-      offscreen.pushMatrix();
-      offscreen.translate(nextPose[0]-55, nextPose[1]-55);
-      offscreen.imageMode(CENTER);
-      offscreen.rotate(-0.05 * i_sun);
-      offscreen.image(img_ven, 0, 0, 20, 20);
-      offscreen.popMatrix();
-      offscreen.imageMode(CORNER);
-    }
-    if(i == 2){
-      offscreen.pushMatrix();
-      offscreen.translate(nextPose[0]-55, nextPose[1]-55);
-      offscreen.imageMode(CENTER);
-      offscreen.rotate(timeScale*i_sun);
-      offscreen.image(img_ear, 0, 0, 20, 20);
-      offscreen.popMatrix();
-      offscreen.imageMode(CORNER);
-    }
-    if(i == 3){
-      offscreen.pushMatrix();
-      offscreen.translate(nextPose[0]-55, nextPose[1]-55);
-      offscreen.imageMode(CENTER);
-      offscreen.rotate(timeScale*i_sun);
-      offscreen.image(img_mar, 0, 0, 20, 20);
-      offscreen.popMatrix();
-      offscreen.imageMode(CORNER);
-    }
-
-    offscreen.text(names[i], nextPose[0] -40, nextPose[1] -40);
+  
+    offscreen.text(names[i-1], nextPose[0] -40, nextPose[1] -40);
 
     //   void target(int control, int timeout, int mode, int maxspeed, int speedchange,  int x, int y, int theta) {
     cube.target(
