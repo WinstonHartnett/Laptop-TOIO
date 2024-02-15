@@ -17,6 +17,8 @@ Keystone ks;
 CornerPinSurface surface;
 PGraphics offscreen;
 
+PImage img;
+
 //for OSC
 OscP5 oscP5;
 //where to send the commands to
@@ -88,6 +90,8 @@ void setup() {
   ks = new Keystone(this);
   surface = ks.createCornerPinSurface(400, 300, 20);
   
+  img = loadImage("Green_test_square.png");
+  
   offscreen = createGraphics(400, 300, P3D);
 }
 
@@ -104,15 +108,8 @@ void draw() {
 //  fill(255);
   //rect(matDimension[0] - xOffset, matDimension[1] - yOffset, matDimension[2] - matDimension[0], matDimension[3] - matDimension[1]);
     // Draw the scene, offscreen, i.e. the projection mapping part
-  offscreen.beginDraw();
-  offscreen.background(255);
-  offscreen.fill(0, 255, 0);
-  offscreen.ellipse(surfaceMouse.x, surfaceMouse.y, 75, 75);
-  offscreen.endDraw();
   
   background(0);
-  
-  surface.render(offscreen);
   
 
   //draw the cubes
@@ -236,8 +233,21 @@ void draw() {
       + " vy: "    + nextPose[4]
     );
 
-    circle(nextPose[0], nextPose[1], 20);
-    text("planet " + i, nextPose[0] + 15, nextPose[1] + 15);
+
+    offscreen.beginDraw();
+    offscreen.background(255);
+    offscreen.image(img, 0, 0, 400, 300);
+    offscreen.fill(255, 0, 0);
+    offscreen.ellipse(surfaceMouse.x, surfaceMouse.y, 75, 75);
+    offscreen.fill(0,0,0);
+    offscreen.circle(nextPose[0], nextPose[1], 20);
+    offscreen.text("planet " + i, nextPose[0] + 15, nextPose[1] + 15);
+    offscreen.endDraw();
+    
+    surface.render(offscreen);
+    
+    
+    
 
     //float nextToioVelocity =
     //  10 * (planet.solver().instantVelocity(planet.orbit(), currentGravParameter) / maxBodiesVelocity);
