@@ -21,7 +21,7 @@ float solveEccentricAnomaly(float e, float M) {
 }
 
 class Body {
-  private String name;
+  public String name;
   private float majorAxis;
   private float eccentricity;
   private float periapsis;

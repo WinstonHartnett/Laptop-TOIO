@@ -96,7 +96,7 @@ PImage img_mer;
 PImage img_ven;
 PImage img_ear;
 PImage img_mar;
-PImage sun;
+PImage img_sun;
 PImage star;
 String[] names = new String[4];
 float i_sun = 0;
@@ -128,7 +128,7 @@ void setup() {
   img_ven = loadImage("venus.png");
   img_ear = loadImage("earth.png");
   img_mar = loadImage("mars.png");
-  sun = loadImage("sun.png");
+  img_sun = loadImage("sun.png");
   star = loadImage("night.png");
   ks = new Keystone(this);
   surface = ks.createCornerPinSurface(405, 405, 20);
@@ -302,7 +302,7 @@ void draw() {
   i_sun = i_sun - 0.01;
   offscreen.imageMode(CENTER);
   offscreen.rotate(i_sun);
-  offscreen.image(sun, 0, 0, 40, 40);
+  offscreen.image(img_sun, 0, 0, 40, 40);
   offscreen.popMatrix();
   offscreen.imageMode(CORNER);
   offscreen.fill(0, 255, 0);
@@ -374,8 +374,7 @@ void draw() {
       offscreen.popMatrix();
       offscreen.imageMode(CORNER);
     }
-    
-  
+
     offscreen.text(names[i], nextPose[0] -40, nextPose[1] -40);
 
     //   void target(int control, int timeout, int mode, int maxspeed, int speedchange,  int x, int y, int theta) {
