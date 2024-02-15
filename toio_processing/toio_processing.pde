@@ -89,9 +89,17 @@ int[] matCenter = {
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
-void settings() {
-  size(1000, 1000, P3D); //Added capability with P3D servers for projection mapping
-}
+//void settings() {
+//  size(1000, 1000, P3D); //Added capability with P3D servers for projection mapping
+//}
+PImage img_mer;
+PImage img_ven;
+PImage img_ear;
+PImage img_mar;
+PImage sun;
+PImage star;
+String[] names = new String[4];
+float i_sun = 0;
 
 void setup() {  
   //launch OSC sercer
@@ -104,7 +112,10 @@ void setup() {
   for (int i = 0; i< nCubes; ++i) {
     cubes[i] = new Cube(i);
   }
-
+  names[0] = "Mercury";
+  names[1] = "Venus";
+  names[2] = "Earth";
+  names[3] = "Mars";
   xOffset = matDimension[0] - 45;
   yOffset = matDimension[1] - 45;
 
@@ -112,10 +123,17 @@ void setup() {
   //we'll be updating the cubes every frame, so don't try to go too high
   frameRate(30);
   
+  size(800, 600, P3D);
+  img_mer = loadImage("mercury.png");
+  img_ven = loadImage("venus.png");
+  img_ear = loadImage("earth.png");
+  img_mar = loadImage("mars.png");
+  sun = loadImage("sun.png");
+  star = loadImage("night.png");
   ks = new Keystone(this);
-  surface = ks.createCornerPinSurface(400, 300, 20);
+  surface = ks.createCornerPinSurface(405, 405, 20);
   
-  offscreen = createGraphics(400, 300, P3D);
+  offscreen = createGraphics(405, 405, P3D);
   
   //img = load("EmptySpace.jpeg");
 
@@ -131,44 +149,34 @@ void setup() {
 void draw() {
   //START TEMPLATE/DEBUG VIEW
 //  background(0);// black background
-  stroke(0);
   long now = System.currentTimeMillis();
   
   PVector surfaceMouse = surface.getTransformedMouse();
   
 
   //draw the "mat"
-//  fill(255);
   //rect(matDimension[0] - xOffset, matDimension[1] - yOffset, matDimension[2] - matDimension[0], matDimension[3] - matDimension[1]);
-    // Draw the scene, offscreen, i.e. the projection mapping part
-//  offscreen.beginDraw();
-//  offscreen.background(255);
-//  offscreen.fill(0, 255, 0);
-//  offscreen.ellipse(surfaceMouse.x, surfaceMouse.y, 75, 75);
-//  offscreen.endDraw();
+     //Draw the scene, offscreen, i.e. the projection mapping part
   
-  background(0);
-  
-//  surface.render(offscreen);
   
 
   //draw the cubes
-  for (int i = 0; i < nCubes; i++) {
-    cubes[i].checkActive(now);
+  //for (int i = 0; i < nCubes; i++) {
+  //  cubes[i].checkActive(now);
     
-    if (cubes[i].isActive) {
-      pushMatrix();
-      translate(cubes[i].x - xOffset, cubes[i].y - yOffset);
-      fill(0);
-      textSize(15);
-      text(i, 0, -20);
-      noFill();
-      rotate(cubes[i].theta * PI/180);
-      rect(-10, -10, 20, 20);
-      line(0, 0, 20, 0);
-      popMatrix();
-    }
-  }
+  //  if (cubes[i].isActive) {
+  //    pushMatrix();
+  //    translate(cubes[i].x - xOffset, cubes[i].y - yOffset);
+  //    fill(0);
+  //    textSize(15);
+  //    text(i, 0, -20);
+  //    noFill();
+  //    rotate(cubes[i].theta * PI/180);
+  //    rect(-10, -10, 20, 20);
+  //    line(0, 0, 20, 0);
+  //    popMatrix();
+  //  }
+  //}
 
   //END TEMPLATE/DEBUG VIEW
 
@@ -284,7 +292,22 @@ void draw() {
 
   //println("[time] " + time);
 
-  for (int i = 1; i < bodies.length; i++) { // skip the central body
+  println("[time] " + time);
+
+  offscreen.beginDraw();
+  offscreen.background(255);
+  offscreen.image(star, 0, 0, 450, 450);
+  offscreen.pushMatrix();
+  offscreen.translate(202.5, 202.5);
+  i_sun = i_sun - 0.01;
+  offscreen.imageMode(CENTER);
+  offscreen.rotate(i_sun);
+  offscreen.image(sun, 0, 0, 40, 40);
+  offscreen.popMatrix();
+  offscreen.imageMode(CORNER);
+  offscreen.fill(0, 255, 0);
+
+  for (int i = 1; i < bodies.length; i++) {
     Body body = bodies[i];
     Cube cube = cubes[i];
 
@@ -306,9 +329,54 @@ void draw() {
       sqrt(pow(cube.targetedX - cube.x, 2) + pow(cube.targetedY - cube.y, 2));
     float nextVelocity = positionError * P_CORRECT;
 
-    circle(nextPose[0], nextPose[1], 20);
-
-    text("planet " + i, nextPose[0] + 15, nextPose[1] + 15);
+    println(
+      "[pose "
+      + i
+      + "] x: "    + round(nextPose[0])
+      + " y: "     + round(nextPose[1])
+      + " theta: " + round(nextPose[2])
+      + " vx: "    + nextPose[3]
+      + " vy: "    + nextPose[4]
+    );
+    if(i == 0){
+      offscreen.pushMatrix();
+      offscreen.translate(nextPose[0]-55, nextPose[1]-55);
+      offscreen.imageMode(CENTER);
+      offscreen.rotate(i_sun);
+      offscreen.image(img_mer, 0, 0, 20, 20);
+      offscreen.popMatrix();
+      offscreen.imageMode(CORNER);
+    }
+    if(i == 1){
+      offscreen.pushMatrix();
+      offscreen.translate(nextPose[0]-55, nextPose[1]-55);
+      offscreen.imageMode(CENTER);
+      offscreen.rotate(-0.05 * i_sun);
+      offscreen.image(img_ven, 0, 0, 20, 20);
+      offscreen.popMatrix();
+      offscreen.imageMode(CORNER);
+    }
+    if(i == 2){
+      offscreen.pushMatrix();
+      offscreen.translate(nextPose[0]-55, nextPose[1]-55);
+      offscreen.imageMode(CENTER);
+      offscreen.rotate(timeScale*i_sun);
+      offscreen.image(img_ear, 0, 0, 20, 20);
+      offscreen.popMatrix();
+      offscreen.imageMode(CORNER);
+    }
+    if(i == 3){
+      offscreen.pushMatrix();
+      offscreen.translate(nextPose[0]-55, nextPose[1]-55);
+      offscreen.imageMode(CENTER);
+      offscreen.rotate(timeScale*i_sun);
+      offscreen.image(img_mar, 0, 0, 20, 20);
+      offscreen.popMatrix();
+      offscreen.imageMode(CORNER);
+    }
+    
+  
+    offscreen.text(names[i], nextPose[0] -40, nextPose[1] -40);
 
     //   void target(int control, int timeout, int mode, int maxspeed, int speedchange,  int x, int y, int theta) {
     cube.target(
@@ -322,4 +390,9 @@ void draw() {
       (int)nextPose[2]
     );
   }
+    
+  offscreen.ellipse(surfaceMouse.x, surfaceMouse.y, 75, 75);
+  offscreen.endDraw();
+  background(0);
+  surface.render(offscreen);
 }
